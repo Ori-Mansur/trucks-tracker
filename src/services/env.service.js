@@ -4,7 +4,7 @@
 import Axios from 'axios';
 
 var BASE_URL = process.env.NODE_ENV === 'production'
-    ? '/'
+    ? window.location.origin 
     : '//localhost:3010' 
 
 async function getBaseUrl() {
