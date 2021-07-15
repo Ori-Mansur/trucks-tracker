@@ -33,7 +33,7 @@ export default {
         this.google = window.google;
         this.map = new this.google.maps.Map(document.getElementById("map"), {
           center: { lat: 40.137115478515625, lng: -116.52953338623047 },
-          zoom: 10,
+          zoom: 8,
         });
       });
     },
@@ -72,29 +72,12 @@ export default {
                          ? "Malfunction Warning"
                          : "No Malfunction Warning"
                      }</div>
-                    <div>km ${total.toFixed(2)}</div>
+                    <div>km ${(total / 1000 ).toFixed(2)}</div>
                     <button onclick="openVueModal(${loc})">info</button>`
       );
 
       this.infowindow.open(this.map, marker);
       return total;
-
-      // var service = new this.google.maps.DistanceMatrixService();
-      // service.getDistanceMatrix(
-      //   {
-      //     origins: [{ lat: 36.579, lng: -118.292 }],
-      //     destinations: [{ lat: 55.93, lng: -3.118 }],
-      //     travelMode: "DRIVING",
-      //   },
-      //   callback
-      // );
-
-      // function callback(response, status) {
-      //   // See Parsing the Results for
-      //   // the basics of a callback function.
-      //   console.log(response, status);
-      // }
-      // this.openDetails(loc);
     };
   },
   computed: {
@@ -161,7 +144,7 @@ export default {
                          ? "Malfunction Warning"
                          : "No Malfunction Warning"
                      }</div>
-                    <div>km ${total.toFixed(2)}</div>
+                    <div>km ${(total/1000).toFixed(2)}</div>
                     <button onclick="openVueModal(${loc})">info</button>`
             );
           } else {
