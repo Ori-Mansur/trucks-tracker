@@ -41,6 +41,9 @@ export default {
     trucksData() {
       return this.$store.getters.trucksData;
     },
+    BASE_URL() {
+      return this.$store.getters.BASE_URL;
+    },
   },
   methods: {
     unselectTruck(){
@@ -56,7 +59,7 @@ export default {
 
     openConection() {
       console.log("Starting connection to WebSocket Server");
-      this.connection = new WebSocket("ws://localhost:3000");
+      this.connection = new WebSocket("ws:"+this.BASE_URL);
       // this.connection.binaryType = "blob";
 
       var vue = this;
@@ -82,6 +85,8 @@ export default {
     },
   },
   async created() {
+    this.$store.dispatch("getBASE_URL");
+
     this.openConection();
   },
   destroyed() {
