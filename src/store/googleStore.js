@@ -4,7 +4,7 @@ import envService from "../services/env.service";
 export default {
     state: {
         googleKey: null,
-        BASE_URL: '/'
+        BASE_URL: null
     },
     mutations: {
         setBASE_URL(state, { url }) {
@@ -16,7 +16,7 @@ export default {
     },
     actions: {
         async getBASE_URL(context) {
-            var url = envService.getBaseUrl()
+            var url = await envService.getBaseUrl()
             context.commit({ type: 'setBASE_URL', url })
         },
         async getGoogleKey(context, { key }) {

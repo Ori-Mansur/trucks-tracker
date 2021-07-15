@@ -2,17 +2,20 @@
   <div id="app">
     <AppModal v-if="selectedTruck">
       <div>
-         <h3>Truck No.{{ selectedTruck }}</h3>
-      <h5>Total Record: {{ trucksData[selectedTruck].length }}</h5>
-      <h5>
-        First Status:
-        {{ trucksData[selectedTruck][trucksData[selectedTruck].length - 1].epoch | dateTimeFormat }}
-      </h5>
-      <h5>Last Status: {{ trucksData[selectedTruck][0].epoch | dateTimeFormat }}</h5>
-      <h5>
-        Last Location: {{ trucksData[selectedTruck][0].latitude.toFixed(4) }} N |
-        {{ trucksData[selectedTruck][0].longitude.toFixed(4) }} E
-      </h5>
+        <h3>Truck No.{{ selectedTruck }}</h3>
+        <h5>Total Record: {{ trucksData[selectedTruck].length }}</h5>
+        <h5>
+          First Status:
+          {{
+            trucksData[selectedTruck][trucksData[selectedTruck].length - 1].epoch
+              | dateTimeFormat
+          }}
+        </h5>
+        <h5>Last Status: {{ trucksData[selectedTruck][0].epoch | dateTimeFormat }}</h5>
+        <h5>
+          Last Location: {{ trucksData[selectedTruck][0].latitude.toFixed(4) }} N |
+          {{ trucksData[selectedTruck][0].longitude.toFixed(4) }} E
+        </h5>
         <button @click="unselectTruck">Close</button>
       </div>
     </AppModal>
@@ -46,20 +49,19 @@ export default {
     },
   },
   methods: {
-    unselectTruck(){
-      this.$store.dispatch({ type: "selectTruck", truckId:null });
-
+    unselectTruck() {
+      this.$store.dispatch({ type: "selectTruck", truckId: null });
     },
-    sendMessage (message) {
+    sendMessage(message) {
       this.connection.send(message);
     },
-    closeConnection () {
+    closeConnection() {
       this.connection.close();
     },
 
     openConection() {
       console.log("Starting connection to WebSocket Server");
-      this.connection = new WebSocket("ws:"+this.BASE_URL);
+      this.connection = new WebSocket("ws:" + this.BASE_URL);
       // this.connection.binaryType = "blob";
 
       var vue = this;
@@ -85,12 +87,22 @@ export default {
     },
   },
   async created() {
-    this.$store.dispatch("getBASE_URL");
-
-    this.openConection();
+    await this.$store.dispatch("getBASE_URL");
   },
   destroyed() {
     this.closeConnection();
+  },
+  watch: {
+    BASE_URL: {
+      immediate: true,
+      deep: true,
+      handler(newVal) {
+        console.log(newVal);
+        if (newVal) {
+          this.openConection();
+        }
+      },
+    },
   },
 };
 </script>
