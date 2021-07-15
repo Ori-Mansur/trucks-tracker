@@ -26,6 +26,7 @@ export default {
       const loader = new Loader({
         apiKey: this.googleKey,
         version: "weekly",
+        libraries: ["geometry"],
         // ...additionalOptions,
       });
       loader.load().then(() => {
@@ -40,6 +41,60 @@ export default {
   created() {
     window.openVueModal = (loc) => {
       this.openDetails(loc);
+    };
+    window.openMapModal = (loc, marker) => {
+      // console.log(this.trucksData[loc].map(d=>{
+      //   return { lat: 36.579, lng: -118.292 }
+      // }));
+      // const path = [
+      //   { lat: 36.579, lng: -118.292 },
+      //   { lat: 36.606, lng: -118.0638 },
+      //   { lat: 36.433, lng: -117.951 },
+      //   { lat: 36.588, lng: -116.943 },
+      //   { lat: 36.34, lng: -117.468 },
+      //   { lat: 36.24, lng: -116.832 },
+      // ];
+      var total = 0;
+      for (var j = 0; j < this.trucksData[loc].length - 1; j++) {
+        var path = this.trucksData[loc];
+        var pos1 = new this.google.maps.LatLng(path[j].latitude, path[j].longitude);
+        var pos2 = new this.google.maps.LatLng(
+          path[j + 1].latitude,
+          path[j + 1].longitude
+        );
+        total += this.google.maps.geometry.spherical.computeDistanceBetween(pos1, pos2);
+      }
+      console.log(total);
+      this.infowindow.setContent(
+        `<h4>Truck Num. ${loc}</h4> \n   
+                     <div>${
+                       this.trucksData[loc][0].malfunctionWarning
+                         ? "Malfunction Warning"
+                         : "No Malfunction Warning"
+                     }</div>
+                    <div>km ${total.toFixed(2)}</div>
+                    <button onclick="openVueModal(${loc})">info</button>`
+      );
+
+      this.infowindow.open(this.map, marker);
+      return total;
+
+      // var service = new this.google.maps.DistanceMatrixService();
+      // service.getDistanceMatrix(
+      //   {
+      //     origins: [{ lat: 36.579, lng: -118.292 }],
+      //     destinations: [{ lat: 55.93, lng: -3.118 }],
+      //     travelMode: "DRIVING",
+      //   },
+      //   callback
+      // );
+
+      // function callback(response, status) {
+      //   // See Parsing the Results for
+      //   // the basics of a callback function.
+      //   console.log(response, status);
+      // }
+      // this.openDetails(loc);
     };
   },
   computed: {
@@ -71,22 +126,43 @@ export default {
         var locations = newVal.map((v) => {
           return [v, this.trucksData[v][0].latitude, this.trucksData[v][0].longitude, 4];
         });
+
         // console.log(locations);
-        var infowindow = new this.google.maps.InfoWindow();
+        if (!this.infowindow) {
+          this.infowindow = new this.google.maps.InfoWindow();
+        }
         this.count = 0;
 
         for (let i = 0; i < locations.length; i++) {
           if (this.markers[locations[i][0]]) {
+            var loc = locations[i][0];
             this.markers[locations[i][0]].setPosition({
               lat: locations[i][1],
               lng: locations[i][2],
             });
-            infowindow.setContent(
-              `<h4>Truck Num. ${locations[i][0]}</h4> \n    ${
-                this.trucksData[locations[i][0]][0].malfunctionWarning
-                  ? "Malfunction Warning"
-                  : "No Malfunction Warning"
-              }<button onclick="vue.sendMessage(locations[i][0])">info</button>`
+            var total = 0;
+            for (var j = 0; j < this.trucksData[loc].length - 1; j++) {
+              var path = this.trucksData[loc];
+              var pos1 = new this.google.maps.LatLng(path[j].latitude, path[j].longitude);
+              var pos2 = new this.google.maps.LatLng(
+                path[j + 1].latitude,
+                path[j + 1].longitude
+              );
+              total += this.google.maps.geometry.spherical.computeDistanceBetween(
+                pos1,
+                pos2
+              );
+            }
+
+            this.infowindow.setContent(
+              `<h4>Truck Num. ${loc}</h4> \n
+                     <div>${
+                       this.trucksData[loc][0].malfunctionWarning
+                         ? "Malfunction Warning"
+                         : "No Malfunction Warning"
+                     }</div>
+                    <div>km ${total.toFixed(2)}</div>
+                    <button onclick="openVueModal(${loc})">info</button>`
             );
           } else {
             this.markers[locations[i][0]] = new this.google.maps.Marker({
@@ -97,17 +173,17 @@ export default {
             });
             this.markers[locations[i][0]].addListener(
               "mouseover",
-              (function (marker, i, data) {
+              (function (marker, i) {
                 return function () {
-                  infowindow.setContent(
-                    `<h4>Truck Num. ${locations[i][0]}</h4> \n    ${
-                      data[locations[i][0]][0].malfunctionWarning
-                        ? "Malfunction Warning"
-                        : "No Malfunction Warning"
-                    }<button onclick="openVueModal(${locations[i][0]})">info</button>`
-                  );
+                  window.openMapModal(locations[i][0], marker);
+                  // infowindow.setContent(
+                  //   `<h4>Truck Num. ${locations[i][0]}</h4> \n
+                  //    <div>${data[locations[i][0]][0].malfunctionWarning ? "Malfunction Warning" : "No Malfunction Warning"}</div>
+                  //   <div>km ${total.toFixed(2)}</div>
+                  //   <button onclick="openVueModal(${locations[i][0]})">info</button>`
+                  // );
 
-                  infowindow.open(this.map, marker);
+                  // infowindow.open(this.map, marker);
                 };
               })(this.markers[locations[i][0]], i, this.trucksData, this)
             );
