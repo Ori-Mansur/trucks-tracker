@@ -16,6 +16,7 @@ export default {
   data() {
     return {
       markers: {},
+      infowindows:{}
     };
   },
   methods: {
@@ -33,7 +34,7 @@ export default {
         this.google = window.google;
         this.map = new this.google.maps.Map(document.getElementById("map"), {
           center: { lat: 40.137115478515625, lng: -116.52953338623047 },
-          zoom: 8,
+          zoom: 7,
         });
       });
     },
@@ -65,7 +66,7 @@ export default {
         total += this.google.maps.geometry.spherical.computeDistanceBetween(pos1, pos2);
       }
       console.log(total);
-      this.infowindow.setContent(
+      this.infowindows[loc].setContent(
         `<h4>Truck Num. ${loc}</h4> \n   
                      <div>${
                        this.trucksData[loc][0].malfunctionWarning
@@ -76,7 +77,7 @@ export default {
                     <button onclick="openVueModal(${loc})">info</button>`
       );
 
-      this.infowindow.open(this.map, marker);
+      this.infowindows[loc].open(this.map, marker);
       return total;
     };
   },
@@ -88,7 +89,7 @@ export default {
       return this.$store.getters.googleKey;
     },
     truckIds() {
-      return Object.keys(this.trucksData);
+      return Object.keys(this.trucksData).sort();
     },
   },
   watch: {
@@ -111,15 +112,17 @@ export default {
         });
 
         // console.log(locations);
-        if (!this.infowindow) {
-          this.infowindow = new this.google.maps.InfoWindow();
-        }
+        
         this.count = 0;
 
         for (let i = 0; i < locations.length; i++) {
-          if (this.markers[locations[i][0]]) {
-            var loc = locations[i][0];
-            this.markers[locations[i][0]].setPosition({
+          var loc = locations[i][0];
+          if (!this.infowindows[loc]) {
+          this.infowindows[loc] = new this.google.maps.InfoWindow();
+        }
+          if (this.markers[loc]) {
+            
+            this.markers[loc].setPosition({
               lat: locations[i][1],
               lng: locations[i][2],
             });
@@ -137,7 +140,7 @@ export default {
               );
             }
 
-            this.infowindow.setContent(
+            this.infowindows[loc].setContent(
               `<h4>Truck Num. ${loc}</h4> \n
                      <div>${
                        this.trucksData[loc][0].malfunctionWarning
@@ -159,14 +162,14 @@ export default {
               (function (marker, i) {
                 return function () {
                   window.openMapModal(locations[i][0], marker);
-                  // infowindow.setContent(
+                  // infowindows.setContent(
                   //   `<h4>Truck Num. ${locations[i][0]}</h4> \n
                   //    <div>${data[locations[i][0]][0].malfunctionWarning ? "Malfunction Warning" : "No Malfunction Warning"}</div>
                   //   <div>km ${total.toFixed(2)}</div>
                   //   <button onclick="openVueModal(${locations[i][0]})">info</button>`
                   // );
 
-                  // infowindow.open(this.map, marker);
+                  // infowindows.open(this.map, marker);
                 };
               })(this.markers[locations[i][0]], i, this.trucksData, this)
             );
