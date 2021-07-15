@@ -44,17 +44,6 @@ export default {
       this.openDetails(loc);
     };
     window.openMapModal = (loc, marker) => {
-      // console.log(this.trucksData[loc].map(d=>{
-      //   return { lat: 36.579, lng: -118.292 }
-      // }));
-      // const path = [
-      //   { lat: 36.579, lng: -118.292 },
-      //   { lat: 36.606, lng: -118.0638 },
-      //   { lat: 36.433, lng: -117.951 },
-      //   { lat: 36.588, lng: -116.943 },
-      //   { lat: 36.34, lng: -117.468 },
-      //   { lat: 36.24, lng: -116.832 },
-      // ];
       var total = 0;
       for (var j = 0; j < this.trucksData[loc].length - 1; j++) {
         var path = this.trucksData[loc];
@@ -65,7 +54,6 @@ export default {
         );
         total += this.google.maps.geometry.spherical.computeDistanceBetween(pos1, pos2);
       }
-      console.log(total);
       this.infowindows[loc].setContent(
         `<h4>Truck Num. ${loc}</h4> \n   
                      <div>${
