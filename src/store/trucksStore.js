@@ -15,6 +15,9 @@ export default {
                 ...state.trucks
             }
            
+        },
+        selectTruck(state, { truckId }){
+            state.selectedTruck = truckId;
         }
     },
     actions: {
@@ -23,9 +26,9 @@ export default {
             var messages = [];
             let id = new DataView(reader.result, 0, 4);
             let numOfMessages = new DataView(reader.result, 4, 1);
-            console.log("id", id.getInt32());
+            // console.log("id", id.getInt32());
             id = id.getInt32();
-            console.log("numOfMessages", numOfMessages.getUint8());
+            // console.log("numOfMessages", numOfMessages.getUint8());
             data.numOfMessages = numOfMessages.getUint8();
             for (let i = 0; i < numOfMessages.getUint8(); i++) {
                 var eli = 5;
@@ -61,6 +64,10 @@ export default {
             context.commit({ type: 'setTrucksData', data: { id, messages: [...messages] } })
 
         },
+        selectTruck(context, { truckId }){
+            context.commit({ type: 'selectTruck', truckId })
+
+        }
 
 
     },

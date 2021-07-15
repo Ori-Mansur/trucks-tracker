@@ -1,34 +1,13 @@
 <template>
   <div class="hello">
     <h3>Dashboard</h3>
-    <div id="map"></div>
-    <h3>Essential Links</h3>
-    <ul v-for="truckId in truckIds" :key="truckId">
-      <h3>Truck No.{{ truckId }}</h3>
-      <h5>Total Record: {{ trucksData[truckId].length }}</h5>
-      <h5>
-        First Status:
-        {{ trucksData[truckId][trucksData[truckId].length - 1].epoch | dateTimeFormat }}
-      </h5>
-      <h5>Last Status: {{ trucksData[truckId][0].epoch | dateTimeFormat }}</h5>
-      <h5>
-        Last Location: {{ trucksData[truckId][0].latitude.toFixed(4) }} N |
-        {{ trucksData[truckId][0].longitude.toFixed(4) }} E
-      </h5>
-      <!-- <li v-for="(msg, idx) in trucksData[truckId]" :key="idx">
-        <span>engineHeat: {{msg.engineHeat}}</span>
-        <span>epoch: {{msg.epoch | dateTimeFormat}}</span>
-        <span>malfunctionWarning: {{msg.malfunctionWarning ? true : false}}</span>
-      </li> -->
-      <!-- <span>latitude: {{msg.latitude}}</span>
-        <span>longitude: {{msg.longitude}}</span> -->
-    </ul>
+    <div v-if="googleKey" id="map"></div>
   </div>
 </template>
 
 <script>
 import { Loader } from "@googlemaps/js-api-loader";
-import * as truck from '../assets/truck.svg'
+import * as truck from "../assets/truck.svg";
 export default {
   name: "HelloWorld",
   props: {
@@ -39,43 +18,60 @@ export default {
       markers: {},
     };
   },
-   methods: {
-    sendMessage: function (no) {
-console.log('nonono ',no);
+  methods: {
+    openDetails: function (no) {
+      this.$store.dispatch({ type: "selectTruck", truckId: no });
     },
-   },
-  created() {
-    const loader = new Loader({
-      apiKey: "AIzaSyBtIZbV3hkdA38vvKGEGbrpEah3vO1ZPyE",
-      version: "weekly",
-      // ...additionalOptions,
-    });
-    loader.load().then(() => {
-      this.google = window.google;
-      this.map = new this.google.maps.Map(document.getElementById("map"), {
-        center: { lat: 40.25580596923828, lng: -116.98463439941406 },
-        zoom: 7,
+    setMap() {
+      const loader = new Loader({
+        apiKey: this.googleKey,
+        version: "weekly",
+        // ...additionalOptions,
       });
-    });
+      loader.load().then(() => {
+        this.google = window.google;
+        this.map = new this.google.maps.Map(document.getElementById("map"), {
+          center: { lat: 40.137115478515625, lng: -116.52953338623047 },
+          zoom: 10,
+        });
+      });
+    },
+  },
+  created() {
+    window.openVueModal = (loc) => {
+      this.openDetails(loc);
+    };
   },
   computed: {
     trucksData() {
       return this.$store.getters.trucksData;
+    },
+    googleKey() {
+      return this.$store.getters.googleKey;
     },
     truckIds() {
       return Object.keys(this.trucksData);
     },
   },
   watch: {
+    googleKey: {
+      immediate: true,
+      deep: true,
+      handler(newVal) {
+        if (newVal) {
+          this.setMap();
+        }
+      },
+    },
     truckIds: {
       immediate: false,
       deep: true,
       handler(newVal) {
-        console.log(newVal);
+        // console.log(newVal);
         var locations = newVal.map((v) => {
           return [v, this.trucksData[v][0].latitude, this.trucksData[v][0].longitude, 4];
         });
-        console.log(locations);
+        // console.log(locations);
         var infowindow = new this.google.maps.InfoWindow();
         this.count = 0;
 
@@ -86,40 +82,35 @@ console.log('nonono ',no);
               lng: locations[i][2],
             });
             infowindow.setContent(
-                   `<h4>Truck Num. ${locations[i][0]}</h4> \n    ${
-                     this.trucksData[locations[i][0]][0].malfunctionWarning
-                       ? "Malfunction Warning"
-                       : "No Malfunction Warning"
-                   }<button onclick="vue.sendMessage(locations[i][0])">info</button>`
-                 );
+              `<h4>Truck Num. ${locations[i][0]}</h4> \n    ${
+                this.trucksData[locations[i][0]][0].malfunctionWarning
+                  ? "Malfunction Warning"
+                  : "No Malfunction Warning"
+              }<button onclick="vue.sendMessage(locations[i][0])">info</button>`
+            );
           } else {
             this.markers[locations[i][0]] = new this.google.maps.Marker({
               position: new this.google.maps.LatLng(locations[i][1], locations[i][2]),
-              // label: locations[i][0],
               icon: truck,
               map: this.map,
               optimized: true,
             });
             this.markers[locations[i][0]].addListener(
-             "mouseover",
-             (function (marker, i, data,vue) {
-               return function () {
-                 console.log("hi", vue);
-                   infowindow.setContent(
-                   `<h4>Truck Num. ${locations[i][0]}</h4> \n    ${
-                     data[locations[i][0]][0].malfunctionWarning
-                       ? "Malfunction Warning"
-                       : "No Malfunction Warning"
-                   }<button onclick="vue.sendMessage(locations[i][0])">info</button>`
-                 );
-                
-                 
-                 infowindow.open(this.map, marker);
-               };
-             })(this.markers[locations[i][0]], i, this.trucksData,this)
-           );
-            
-           
+              "mouseover",
+              (function (marker, i, data) {
+                return function () {
+                  infowindow.setContent(
+                    `<h4>Truck Num. ${locations[i][0]}</h4> \n    ${
+                      data[locations[i][0]][0].malfunctionWarning
+                        ? "Malfunction Warning"
+                        : "No Malfunction Warning"
+                    }<button onclick="openVueModal(${locations[i][0]})">info</button>`
+                  );
+
+                  infowindow.open(this.map, marker);
+                };
+              })(this.markers[locations[i][0]], i, this.trucksData, this)
+            );
           }
         }
       },

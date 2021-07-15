@@ -2,9 +2,19 @@
   <div id="app">
     <AppModal v-if="selectedTruck">
       <div>
-
+         <h3>Truck No.{{ selectedTruck }}</h3>
+      <h5>Total Record: {{ trucksData[selectedTruck].length }}</h5>
+      <h5>
+        First Status:
+        {{ trucksData[selectedTruck][trucksData[selectedTruck].length - 1].epoch | dateTimeFormat }}
+      </h5>
+      <h5>Last Status: {{ trucksData[selectedTruck][0].epoch | dateTimeFormat }}</h5>
+      <h5>
+        Last Location: {{ trucksData[selectedTruck][0].latitude.toFixed(4) }} N |
+        {{ trucksData[selectedTruck][0].longitude.toFixed(4) }} E
+      </h5>
+        <button @click="unselectTruck">Close</button>
       </div>
-
     </AppModal>
     <button @click="sendMessage('START')">click me</button>
     <button @click="sendMessage('STOP')">STOP me</button>
@@ -13,12 +23,12 @@
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-import AppModal from './components/AppModal.vue'
+import HelloWorld from "./components/HelloWorld.vue";
+import AppModal from "./components/AppModal.vue";
 var list = [];
 export default {
   name: "App",
-  components: {HelloWorld,AppModal},
+  components: { HelloWorld, AppModal },
   data() {
     return {
       list: list,
@@ -28,14 +38,19 @@ export default {
     selectedTruck() {
       return this.$store.getters.selectedTruck;
     },
+    trucksData() {
+      return this.$store.getters.trucksData;
+    },
   },
   methods: {
-    sendMessage: function (message) {
-      console.log(this.connection);
+    unselectTruck(){
+      this.$store.dispatch({ type: "selectTruck", truckId:null });
+
+    },
+    sendMessage (message) {
       this.connection.send(message);
     },
-    closeConnection: function () {
-      console.log(this.connection);
+    closeConnection () {
       this.connection.close();
     },
 
@@ -43,31 +58,30 @@ export default {
       console.log("Starting connection to WebSocket Server");
       this.connection = new WebSocket("ws://localhost:3000");
       // this.connection.binaryType = "blob";
+
       var vue = this;
       this.connection.onmessage = async function (event) {
-        // console.log(event, this);
         // var read;
         if (event.data instanceof Blob) {
           var reader = new FileReader();
 
           reader.onload = () => {
-            // vue.parseData(reader);
-            vue.$store.dispatch({ type: "setTrucksData" ,reader});
+            vue.$store.dispatch({ type: "setTrucksData", reader });
           };
 
           reader.readAsArrayBuffer(event.data);
         } else {
-          console.log("Result: " + event.data);
+          vue.$store.dispatch("getGoogleKey", { key: event.data });
         }
       };
 
-      this.connection.onopen = function (event) {
-        console.log(event);
+      this.connection.onopen = function () {
+        vue.sendMessage("GOOGLE_KEY");
         console.log("Successfully connected to the echo websocket server...");
       };
     },
   },
-  created() {
+  async created() {
     this.openConection();
   },
   destroyed() {

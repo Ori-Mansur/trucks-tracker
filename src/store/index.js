@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 
 import trucksStore from './trucksStore'
+import googleStore from './googleStore'
 
 Vue.use(Vuex)
 
@@ -20,7 +21,7 @@ export default new Vuex.Store({
 
   },
   modules: {
-    trucksStore
-
+    trucksStore,
+    googleStore
   }
 })
