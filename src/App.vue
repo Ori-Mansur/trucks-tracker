@@ -1,26 +1,35 @@
 <template>
   <div id="app">
     <AppModal v-if="selectedTruck">
-      <div>
+      <div class="info-modal">
         <h3>Truck No.{{ selectedTruck }}</h3>
-        <h5>Total Record: {{ trucksData[selectedTruck].length }}</h5>
-        <h5>
-          First Status:
+        <div>
+          <h5>Total Record:</h5>
+          {{ trucksData[selectedTruck].length }}
+        </div>
+        <div>
+          <h5>First Status:</h5>
           {{
             trucksData[selectedTruck][trucksData[selectedTruck].length - 1].epoch
               | dateTimeFormat
           }}
-        </h5>
-        <h5>Last Status: {{ trucksData[selectedTruck][0].epoch | dateTimeFormat }}</h5>
-        <h5>
-          Last Location: {{ trucksData[selectedTruck][0].latitude.toFixed(4) }} N |
+        </div>
+        <div>
+          <h5>Last Status:</h5>
+          {{ trucksData[selectedTruck][0].epoch | dateTimeFormat }}
+        </div>
+        <div>
+          <h5>Last Location:</h5>
+          {{ trucksData[selectedTruck][0].latitude.toFixed(4) }} N |
           {{ trucksData[selectedTruck][0].longitude.toFixed(4) }} E
-        </h5>
+        </div>
         <button @click="unselectTruck">Close</button>
       </div>
     </AppModal>
-    <button @click="sendMessage('START')">click me</button>
-    <button @click="sendMessage('STOP')">STOP me</button>
+    <div>
+      <button @click="sendMessage('START')">click me</button>
+      <button @click="sendMessage('STOP')">STOP me</button>
+    </div>
     <HelloWorld msg="Welcome to Your Vue.js App" />
   </div>
 </template>
@@ -62,11 +71,12 @@ export default {
     openConection() {
       console.log("Starting connection to WebSocket Server");
       this.connection = new WebSocket("ws:" + this.BASE_URL);
+      // this.connection = new WebSocket("ws://trucks-tracker-socket.herokuapp.com");
       // this.connection.binaryType = "blob";
 
       this.connection.onmessage = async (event) => {
         // var read;
-        console.log(event);
+        // console.log(event);
         if (event.data instanceof Blob) {
           var reader = new FileReader();
 
@@ -108,11 +118,44 @@ export default {
 </script>
 
 <style>
+@font-face {
+  font-family: "Montserrat";
+  src: url(~@/assets/fonts/Montserrat-Regular.ttf);
+  font-display: swap;
+}
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  /* font-family: Avenir, Helvetica, Arial, sans-serif; */
+  font-family: "Montserrat", Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+}
+button {
+  font-family: "Montserrat", Avenir, Helvetica, Arial, sans-serif;
+  border: none;
+  background: #2c3e50;
+  color: white;
+  padding: 5px 10px;
+  margin: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.info-modal {
+  padding: 30px;
+}
+.info-modal div {
+  margin-bottom: 10px;
+  border-bottom: 1px solid #2c3e501f;
+  display: flex;
+  justify-content: space-between;
+}
+.info-modal h5 {
+  background-color: #2c3e501f;
+  padding: 3px;
+  width: 150px;
+  margin: 0 5px 0 0;
+  text-align: start;
+  display: inline-block;
 }
 </style>

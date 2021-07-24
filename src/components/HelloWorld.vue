@@ -16,7 +16,7 @@ export default {
   data() {
     return {
       markers: {},
-      infowindows:{}
+      infowindows: {},
     };
   },
   methods: {
@@ -35,6 +35,9 @@ export default {
         this.map = new this.google.maps.Map(document.getElementById("map"), {
           center: { lat: 40.137115478515625, lng: -116.52953338623047 },
           zoom: 7,
+          mapTypeControlOptions: {
+            mapTypeIds: ["roadmap", "terrain"],
+          },
         });
       });
     },
@@ -55,14 +58,18 @@ export default {
         total += this.google.maps.geometry.spherical.computeDistanceBetween(pos1, pos2);
       }
       this.infowindows[loc].setContent(
-        `<h4>Truck Num. ${loc}</h4> \n   
-                     <div>${
-                       this.trucksData[loc][0].malfunctionWarning
-                         ? "Malfunction Warning"
-                         : "No Malfunction Warning"
-                     }</div>
-                    <div>km ${(total / 1000 ).toFixed(2)}</div>
-                    <button onclick="openVueModal(${loc})">info</button>`
+        `<div>
+        <h4>Truck Num. ${loc}</h4>
+        <div>
+           ${
+             this.trucksData[loc][0].malfunctionWarning
+               ? "Malfunction Warning"
+               : "No Malfunction Warning"
+           }
+        </div>
+        <div>km ${(total / 1000).toFixed(2)}</div>
+        <button onclick="openVueModal(${loc})">info</button>
+        </div>`
       );
 
       this.infowindows[loc].open(this.map, marker);
@@ -94,22 +101,17 @@ export default {
       immediate: false,
       deep: true,
       handler(newVal) {
-        // console.log(newVal);
         var locations = newVal.map((v) => {
           return [v, this.trucksData[v][0].latitude, this.trucksData[v][0].longitude, 4];
         });
-
-        // console.log(locations);
-        
         this.count = 0;
 
         for (let i = 0; i < locations.length; i++) {
           var loc = locations[i][0];
           if (!this.infowindows[loc]) {
-          this.infowindows[loc] = new this.google.maps.InfoWindow();
-        }
+            this.infowindows[loc] = new this.google.maps.InfoWindow();
+          }
           if (this.markers[loc]) {
-            
             this.markers[loc].setPosition({
               lat: locations[i][1],
               lng: locations[i][2],
@@ -135,7 +137,7 @@ export default {
                          ? "Malfunction Warning"
                          : "No Malfunction Warning"
                      }</div>
-                    <div>km ${(total/1000).toFixed(2)}</div>
+                    <div>km ${(total / 1000).toFixed(2)}</div>
                     <button onclick="openVueModal(${loc})">info</button>`
             );
           } else {
@@ -180,6 +182,7 @@ export default {
 #map {
   height: 60vh;
   width: 90vw;
+  border-radius: 5px;
 }
 h3 {
   margin: 40px 0 0;
