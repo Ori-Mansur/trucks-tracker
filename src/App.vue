@@ -64,24 +64,24 @@ export default {
       this.connection = new WebSocket("ws:" + this.BASE_URL);
       // this.connection.binaryType = "blob";
 
-      var vue = this;
-      this.connection.onmessage = async function (event) {
+      this.connection.onmessage = async (event) => {
         // var read;
+        console.log(event);
         if (event.data instanceof Blob) {
           var reader = new FileReader();
 
           reader.onload = () => {
-            vue.$store.dispatch({ type: "setTrucksData", reader });
+            this.$store.dispatch({ type: "setTrucksData", reader });
           };
 
           reader.readAsArrayBuffer(event.data);
         } else {
-          vue.$store.dispatch("getGoogleKey", { key: event.data });
+          this.$store.dispatch("getGoogleKey", { key: event.data });
         }
       };
 
-      this.connection.onopen = function () {
-        vue.sendMessage("GOOGLE_KEY");
+      this.connection.onopen = () => {
+        this.sendMessage("GOOGLE_KEY");
         console.log("Successfully connected to the echo websocket server...");
       };
     },
