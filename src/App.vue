@@ -70,7 +70,7 @@ export default {
 
     openConection() {
       console.log("Starting connection to WebSocket Server");
-      this.connection = new WebSocket("ws:" + this.BASE_URL);
+      this.connection = new WebSocket("wss:" + this.BASE_URL);
       // this.connection = new WebSocket("ws://trucks-tracker-socket.herokuapp.com");
       // this.connection.binaryType = "blob";
 
